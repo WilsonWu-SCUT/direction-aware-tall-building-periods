@@ -1,144 +1,144 @@
-# Direction-Aware Tall-Building Period Database
+# Direction-Aware Tall-Building Periods
 
-This repository accompanies the study *Direction-Aware Period Prediction for Seismic Risk Assessment and Application to an Urban Tall Building Portfolio in China*.
+This repository accompanies the study *Direction-Aware Period Prediction for
+Seismic Risk Assessment and Application to an Urban Tall Building Portfolio in
+China*. It provides two database-driven workflows:
 
-The current release contains the translational-period database for 1,333 anonymized tall-building models derived from real engineering projects in China. The records cover building heights from 80 m to 200 m and three structural-system categories.
+1. **Period prediction** from height, effective width, structural system, and
+   seismic design intensity.
+2. **Azimuth prediction** from structural-plan geometry, including principal
+   translational directions, equivalent rectangles, bounding rectangles, and
+   plan regularity.
 
-## Repository status
+## Visual overview
 
-This is the initial database release. Regression and translational-azimuth identification code will be added in subsequent repository updates.
+### Representative plan geometry
 
-## Contents
+![Representative plan-regularity examples](results/azimuth_prediction/figures/plan_geometry_area_ratio_examples.png)
+
+### Period-model coefficient constraints
+
+![Constrained coefficient contours](results/period_prediction/figures/fig_11_constrained_contours.png)
+
+### Full-data period predictions
+
+![Predicted versus numerical periods](results/period_prediction/figures/fig_13_full_data_predictions.png)
+
+## Documentation map
+
+| Workflow | Analysis guide | Database guide |
+|---|---|---|
+| Period prediction | [analysis/period_prediction/README.md](analysis/period_prediction/README.md) | [data/period_prediction/README.md](data/period_prediction/README.md) |
+| Azimuth prediction | [analysis/azimuth_prediction/README.md](analysis/azimuth_prediction/README.md) | [data/azimuth_prediction/README.md](data/azimuth_prediction/README.md) |
+
+Short indexes are also available at [analysis/README.md](analysis/README.md) and
+[data/README.md](data/README.md).
+
+## Repository structure
 
 ```text
+analysis/
+  period_prediction/             Period-regression models and figure workflow
+  azimuth_prediction/            Geometry, azimuth, database, and plotting code
 data/
-  tall_building_periods.csv       Canonical, human-readable source data
-  tall_building_periods.sqlite    Portable SQLite database
-docs/
-  data_dictionary.md              Field definitions, units, and constraints
+  period_prediction/             1,333-model CSV and SQLite period database
+  azimuth_prediction/            482-model anonymized plan-geometry database
+results/
+  period_prediction/             Regression figures, tables, and predictions
+  azimuth_prediction/            Geometry examples and their documentation
 schema/
-  schema.sql                      SQLite schema
+  period_prediction_schema.sql   Period-database schema
+  azimuth_prediction_schema.sql  Plan-geometry database schema
 scripts/
-  build_database.py               Rebuild the SQLite database from CSV
-  extract_supplementary.py        Recreate the CSV from the Word supplement
-  validate_database.py            Validate data, schema, and language policy
-analysis/section_4_2/
-  regression.py                   Regression definitions and fit functions
-  run_analysis.py                 Tables and publication-style figures
-results/section_4_2/
-  figures/                        Fig. 11 and full-data Fig. 13 in PNG/PDF
-  tables/                         CSV, Markdown, and LaTeX statistical tables
-  data/                           Full-data directional predictions
-DATA_LICENSE.md                   CC BY 4.0 notice for database content
-LICENSE                           MIT License for repository code
-requirements.txt                  Analysis and plotting dependencies
-requirements-dev.txt              Optional DOCX-extraction dependency
+  build_period_database.py       Rebuild the period SQLite database
+  validate_period_database.py    Validate period data and repository policy
+  validate_azimuth_database.py   Validate plan geometry and classifications
+  update_azimuth_threshold.py    Apply the eta_A = 0.80 threshold
+  plot_azimuth_prediction.py     Plot one or all models from SQLite
+  generate_azimuth_examples.py   Regenerate the representative example set
+tests/
+  test_period_prediction.py      Period-analysis tests
+  test_azimuth_prediction.py     Geometry and database tests
 ```
 
-## Dataset summary
+The two top-level result folders mirror the two analysis folders. Paper section
+numbers are retained only in explanatory text where useful; they are not used
+as package or result-directory names.
 
-| Structural system | Code | Source table | Records |
-|---|---:|---:|---:|
-| Shear wall | SW | Table S1 | 818 |
-| Frame-shear wall | FSW | Table S2 | 181 |
-| Frame-tube | FT | Table S3 | 334 |
-| **Total** |  |  | **1,333** |
+## Data at a glance
 
-Each record provides:
+| Database | Models | Main purpose |
+|---|---:|---|
+| `tall_building_periods.sqlite` | 1,333 | Directional translational-period regression |
+| `building_plan_geometry.sqlite` | 482 | Principal azimuth and plan-geometry analysis |
 
-- building height;
-- transverse and longitudinal effective widths;
-- building function;
-- seismic design intensity degree; and
-- transverse and longitudinal translational periods.
-
-The model identifiers are anonymized and preserve the identifiers used in the supplementary tables.
+The plan-regularity ratio is
+`eta_A = plan area / minimum-bounding-rectangle area`. The corrected
+classification threshold is **0.80**: `eta_A >= 0.80` is regular and
+`eta_A < 0.80` is irregular. The azimuth database contains 192 regular and 290
+irregular plans under this rule.
 
 ## Quick start
 
-SQLite is serverless and is included with Python. The database can be queried directly:
-
-```python
-import sqlite3
-
-connection = sqlite3.connect("data/tall_building_periods.sqlite")
-rows = connection.execute(
-    """
-    SELECT model_id, structural_system, building_height_m,
-           transverse_period_s, longitudinal_period_s
-    FROM period_records_readable
-    WHERE seismic_intensity_degree = 8
-    ORDER BY building_height_m
-    LIMIT 10
-    """
-).fetchall()
-
-for row in rows:
-    print(row)
-```
-
-Example command-line query:
+Create an environment and install the declared dependencies:
 
 ```bash
-sqlite3 data/tall_building_periods.sqlite \
-  "SELECT structural_system, COUNT(*) FROM period_records_readable GROUP BY structural_system;"
+python -m venv .venv
+.venv/Scripts/python -m pip install -r requirements.txt
 ```
 
-## Rebuild the database
+On macOS or Linux, use `.venv/bin/python` instead.
 
-The database build uses only the Python standard library:
+Run the complete period-prediction workflow directly from SQLite:
 
 ```bash
-python scripts/build_database.py
+python -m analysis.period_prediction.run_analysis
 ```
 
-To regenerate the canonical CSV from the supplementary Word document:
+Generate one azimuth/geometry result directly from SQLite:
 
 ```bash
-python -m pip install -r requirements-dev.txt
-python scripts/extract_supplementary.py path/to/Supplementary.docx
-python scripts/build_database.py
+python scripts/plot_azimuth_prediction.py --model-id SW-701
+```
+
+Regenerate all representative regularity-ratio examples:
+
+```bash
+python scripts/generate_azimuth_examples.py
 ```
 
 ## Validation
 
-Run the complete validation suite:
-
 ```bash
-python scripts/validate_database.py
+python scripts/validate_period_database.py
+python scripts/validate_azimuth_database.py
+python -m unittest tests.test_period_prediction tests.test_azimuth_prediction
 ```
 
-The validation checks record counts, categories, numeric ranges, foreign keys, SQLite integrity, CSV-to-database equality, the source checksum, and the repository's English-only text policy.
+These commands validate database integrity, model counts, units, identifier
+linkage, geometry invariants, the 0.80 regularity threshold, privacy-sensitive
+schema fields, and numerical regression results.
 
-## Section 4.2 regression analysis
+## Rebuilding data
 
-Install the analysis dependencies and run all Section 4.2 analyses except fold cross-validation:
+The canonical period CSV and SQLite database can be rebuilt with public code:
 
 ```bash
-python -m pip install -r requirements.txt
-python -m analysis.section_4_2.run_analysis
-python -m unittest tests.test_section_4_2
+python scripts/build_period_database.py
 ```
 
-The workflow creates:
+The private plan-file extraction utility is intentionally excluded. The
+published azimuth database already contains the normalized line segments,
+ordered outlines, derived metrics, and anonymized model labels needed for all
+included analyses.
 
-- the unconstrained regression table corresponding to Table 3;
-- the constrained full-database regression table corresponding to Table 4;
-- constrained models without effective width corresponding to Table 5;
-- a coefficient-contour figure corresponding to Fig. 11; and
-- a predicted-versus-numerical period figure adapted from Fig. 13 using direct full-database fits instead of out-of-fold predictions.
+## Privacy, licenses, and citation
 
-Method definitions and reproduction notes are provided in `docs/section_4_2_regression.md`.
+No project names, addresses, coordinates, owner names, phone numbers, private
+time-series keys, or absolute source paths are included in the public data or
+example documentation.
 
-## Data provenance
-
-The canonical CSV was transcribed programmatically from Tables S1-S3 of the paper's supplementary document. No project names, addresses, coordinates, owner names, or other direct project identifiers are included.
-
-## Citation
-
-Please cite the associated paper and the archived data release. Formal journal and DOI metadata will be added after publication and repository archiving.
-
-## Licenses
-
-- Repository code is released under the MIT License in `LICENSE`.
-- Database content and the canonical CSV are released under CC BY 4.0 as described in `DATA_LICENSE.md`.
+- Code: MIT License, see [LICENSE](LICENSE).
+- Data: CC BY 4.0, see [DATA_LICENSE.md](DATA_LICENSE.md).
+- Formal journal and DOI metadata will be added after publication and archive
+  release.

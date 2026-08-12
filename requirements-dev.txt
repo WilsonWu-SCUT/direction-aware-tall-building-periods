@@ -1,2 +1,2 @@
+# Optional dependency for extracting period data from Supplementary.docx.
 python-docx>=1.1,<2
-
