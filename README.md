@@ -10,30 +10,6 @@ China*. It provides two database-driven workflows:
    translational directions, equivalent rectangles, bounding rectangles, and
    plan regularity.
 
-## Interactive website
-
-The [Plan Geometry Intelligence Lab](http://geo.wwstruct.com) provides an
-interactive interface to the same plan-geometry and direction-aware period
-methods. It supports three workflows: browsing the 482 stored research plans,
-drawing a custom polygon with live analysis, and selecting mapped CBD building
-footprints.
-
-In Database Mode, select or search a model identifier to inspect its plan,
-minimum bounding rectangle, inertia-equivalent rectangle, principal axes,
-regularity classification, and predicted transverse and longitudinal periods.
-
-![Plan Geometry Intelligence Lab database mode](web/assets/figure-1-database-mode.png)
-
-In Map Mode, navigate to a supported CBD, select a building footprint, supply
-or review its height, and obtain mapped attributes, plan geometry, and
-direction-aware period predictions in one view.
-
-![Plan Geometry Intelligence Lab map selection](web/assets/figure-4-map-selection.png)
-
-See the [website user guide](web/README.md) for step-by-step operation and the
-[azimuth-analysis guide](analysis/azimuth_prediction/README.md#interactive-website-guide)
-for calculation details and reproducible Python workflows.
-
 ## Visual overview
 
 ### Representative plan geometry
@@ -66,7 +42,7 @@ analysis/
   azimuth_prediction/            Geometry, azimuth, database, and plotting code
 data/
   period_prediction/             1,333-model CSV and SQLite period database
-  azimuth_prediction/            482-model anonymized plan-geometry database
+  azimuth_prediction/            Anonymized plan-geometry database
 results/
   period_prediction/             Regression figures, tables, and predictions
   azimuth_prediction/            Geometry examples and their documentation
@@ -94,16 +70,21 @@ as package or result-directory names.
 
 ## Data at a glance
 
-| Database | Models | Main purpose |
-|---|---:|---|
-| `tall_building_periods.sqlite` | 1,333 | Directional translational-period regression |
-| `building_plan_geometry.sqlite` | 482 | Principal azimuth and plan-geometry analysis |
+| Structural system | Code | Records |
+|---|---:|---:|
+| Shear wall | `SW` | 818 |
+| Frame-shear wall | `FSW` | 181 |
+| Frame-tube | `FT` | 334 |
+| **Total** |  | **1,333** |
+
+The plan-geometry database supplies the normalized outlines and derived metrics
+used by the azimuth-prediction workflow. Its identifiers link to the same
+period database without exposing private source identifiers.
 
 The plan-regularity ratio is
 `eta_A = plan area / minimum-bounding-rectangle area`. The corrected
 classification threshold is **0.80**: `eta_A >= 0.80` is regular and
-`eta_A < 0.80` is irregular. The azimuth database contains 192 regular and 290
-irregular plans under this rule.
+`eta_A < 0.80` is irregular.
 
 ## Quick start
 
@@ -133,6 +114,30 @@ Regenerate all representative regularity-ratio examples:
 ```bash
 python scripts/generate_azimuth_examples.py
 ```
+
+## Interactive website
+
+The [Plan Geometry Intelligence Lab](http://geo.wwstruct.com) provides an
+interactive interface to the same plan-geometry and direction-aware period
+methods. It supports three workflows: browsing stored research plans, drawing a
+custom polygon with live analysis, and selecting mapped CBD building
+footprints.
+
+In Database Mode, select or search a model identifier to inspect its plan,
+minimum bounding rectangle, inertia-equivalent rectangle, principal axes,
+regularity classification, and predicted transverse and longitudinal periods.
+
+![Plan Geometry Intelligence Lab database mode](web/assets/figure-1-database-mode.png)
+
+In Map Mode, navigate to a supported CBD, select a building footprint, supply
+or review its height, and obtain mapped attributes, plan geometry, and
+direction-aware period predictions in one view.
+
+![Plan Geometry Intelligence Lab map selection](web/assets/figure-4-map-selection.png)
+
+See the [website user guide](web/README.md) for step-by-step operation and the
+[azimuth-analysis guide](analysis/azimuth_prediction/README.md#interactive-website-guide)
+for calculation details and reproducible Python workflows.
 
 ## Validation
 

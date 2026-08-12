@@ -22,8 +22,8 @@ Output** panel on the right.
 
 ![Database Mode showing a stored plan and analysis output](assets/figure-1-database-mode.png)
 
-Database Mode exposes the 482 anonymized research plans in the public geometry
-database. The selected identifier is shared with the period database, allowing
+Database Mode exposes the anonymized research plans in the public geometry
+database. Each selected identifier is shared with the period database, allowing
 the interface to show both geometry-derived quantities and the corresponding
 directional period inputs and predictions.
 

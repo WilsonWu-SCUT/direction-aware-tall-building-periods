@@ -3,8 +3,8 @@
 ## File and scope
 
 `building_plan_geometry.sqlite` contains normalized structural plans, ordered
-exterior outlines, and derived geometry for 482 models linked by `model_id` to
-the period database. The schema is
+exterior outlines, and derived geometry linked by `model_id` to the period
+database. The schema is
 [`../../schema/azimuth_prediction_schema.sql`](../../schema/azimuth_prediction_schema.sql).
 
 Coordinates are stored in metres, areas in square metres, and second moments
@@ -32,10 +32,8 @@ eta_A = area_m2 / mbr_area_m2
 
 The database uses the corrected threshold `eta_A = 0.80`:
 
-| Class | Rule | Models |
-|---|---|---:|
-| Regular | `eta_A >= 0.80` | 192 |
-| Irregular | `eta_A < 0.80` | 290 |
+- regular: `eta_A >= 0.80`;
+- irregular: `eta_A < 0.80`.
 
 ## Query example
 
