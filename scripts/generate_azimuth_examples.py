@@ -34,6 +34,7 @@ DEFAULT_OUTPUT = ROOT / "results" / "azimuth_prediction" / "figures"
 DEFAULT_MARKDOWN = ROOT / "results" / "azimuth_prediction" / "regularity_examples.md"
 TARGET_RATIOS = tuple(round(0.95 - 0.05 * index, 2) for index in range(11))
 HALF_INTERVAL = 0.025
+MIN_EQUIVALENT_ASPECT_RATIO = 1.20
 
 
 @dataclass(frozen=True)
@@ -45,6 +46,7 @@ class Candidate:
     target_ratio: float
     axis_deviation: float
     rectangle_deviation: float
+    equivalent_aspect_ratio: float
     score: float
 
     @property
@@ -63,7 +65,8 @@ def select_examples(database: Path) -> list[Candidate]:
         rows = connection.execute(
             """
             SELECT model_id, regularity_ratio,
-                   equivalent_rectangle_long_axis_deg, mbr_long_axis_deg
+                   equivalent_rectangle_long_axis_deg, mbr_long_axis_deg,
+                   major_principal_moment_m4, minor_principal_moment_m4
             FROM plan_geometry_readable
             """
         ).fetchall()
@@ -73,20 +76,29 @@ def select_examples(database: Path) -> list[Candidate]:
     selected: list[Candidate] = []
     for target in TARGET_RATIOS:
         candidates: list[Candidate] = []
-        for model_id, ratio, equivalent_angle, bounding_angle in rows:
+        for (
+            model_id,
+            ratio,
+            equivalent_angle,
+            bounding_angle,
+            major_moment,
+            minor_moment,
+        ) in rows:
             if not (
                 target - HALF_INTERVAL <= ratio < target + HALF_INTERVAL
                 and ratio < 0.975
             ):
                 continue
+            equivalent_aspect_ratio = math.sqrt(major_moment / minor_moment)
+            if equivalent_aspect_ratio < MIN_EQUIVALENT_ASPECT_RATIO:
+                continue
             axis_deviation = angular_distance_mod90(equivalent_angle)
             rectangle_deviation = angular_distance_mod90(
                 equivalent_angle, bounding_angle
             )
-            if target >= 0.90:
-                score = axis_deviation - 0.75 * rectangle_deviation
-            else:
-                score = 0.55 * axis_deviation + 0.45 * rectangle_deviation
+            smaller_deviation = min(axis_deviation, rectangle_deviation)
+            larger_deviation = max(axis_deviation, rectangle_deviation)
+            score = 0.65 * smaller_deviation + 0.35 * larger_deviation
             candidates.append(
                 Candidate(
                     model_id=model_id,
@@ -96,6 +108,7 @@ def select_examples(database: Path) -> list[Candidate]:
                     target_ratio=target,
                     axis_deviation=axis_deviation,
                     rectangle_deviation=rectangle_deviation,
+                    equivalent_aspect_ratio=equivalent_aspect_ratio,
                     score=score,
                 )
             )
@@ -137,20 +150,24 @@ def write_markdown(path: Path, selected: list[Candidate]) -> None:
         "These examples are selected directly from "
         "`data/azimuth_prediction/building_plan_geometry.sqlite` at target "
         "regularity ratios from 0.95 to 0.45 in steps of 0.05. Exact and "
-        "near-exact rectangles above 0.975 are excluded. The classification "
+        "near-exact rectangles above 0.975 are excluded. To avoid numerically "
+        "ambiguous principal directions, the inertia-equivalent rectangle must "
+        "have a long-to-short aspect ratio of at least 1.20. The classification "
         "threshold is `eta_A = 0.80`: values below 0.80 are irregular.",
         "",
         "![Representative examples](figures/plan_geometry_area_ratio_examples.png)",
         "",
         "| Target `eta_A` | Model ID | Actual `eta_A` | Class | "
-        "Equivalent angle | Axis deviation | MBR deviation | Figure |",
-        "|---:|---|---:|---|---:|---:|---:|---|",
+        "Equivalent aspect ratio | Equivalent angle | Axis deviation | "
+        "MBR deviation | Figure |",
+        "|---:|---|---:|---|---:|---:|---:|---:|---|",
     ]
     for item in selected:
         code = int(round(item.target_ratio * 100))
         lines.append(
             f"| {item.target_ratio:.2f} | {item.model_id} | {item.ratio:.6f} | "
-            f"{item.plan_class.title()} | {item.equivalent_angle:.2f}° | "
+            f"{item.plan_class.title()} | {item.equivalent_aspect_ratio:.3f} | "
+            f"{item.equivalent_angle:.2f}° | "
             f"{item.axis_deviation:.2f}° | {item.rectangle_deviation:.2f}° | "
             f"[PNG](figures/plan_geometry_A{code:03d}.png) |"
         )

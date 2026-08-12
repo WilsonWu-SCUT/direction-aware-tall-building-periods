@@ -70,8 +70,10 @@ python scripts/generate_azimuth_examples.py
 ```
 
 The example selector excludes ratios at or above 0.975, uses 0.05 target
-intervals, and favors plans whose equivalent rectangle is noticeably rotated
-relative to the global axes and minimum bounding rectangle.
+intervals, and requires an inertia-equivalent long-to-short aspect ratio of at
+least 1.20 so that the principal direction is sufficiently distinct. Among
+eligible plans, it favors examples whose equivalent rectangle is noticeably
+rotated relative to both the global axes and minimum bounding rectangle.
 
 ## Code separation
 
