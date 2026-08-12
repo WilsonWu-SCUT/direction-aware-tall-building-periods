@@ -151,19 +151,6 @@ These commands validate database integrity, model counts, units, identifier
 linkage, geometry invariants, the 0.80 regularity threshold, privacy-sensitive
 schema fields, and numerical regression results.
 
-## Rebuilding data
-
-The canonical period CSV and SQLite database can be rebuilt with public code:
-
-```bash
-python scripts/build_period_database.py
-```
-
-The private plan-file extraction utility is intentionally excluded. The
-published azimuth database already contains the normalized line segments,
-ordered outlines, derived metrics, and anonymized model labels needed for all
-included analyses.
-
 ## Privacy, licenses, and citation
 
 No project names, addresses, coordinates, owner names, phone numbers, private
