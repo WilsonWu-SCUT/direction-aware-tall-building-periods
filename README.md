@@ -10,6 +10,30 @@ China*. It provides two database-driven workflows:
    translational directions, equivalent rectangles, bounding rectangles, and
    plan regularity.
 
+## Interactive website
+
+The [Plan Geometry Intelligence Lab](http://geo.wwstruct.com) provides an
+interactive interface to the same plan-geometry and direction-aware period
+methods. It supports three workflows: browsing the 482 stored research plans,
+drawing a custom polygon with live analysis, and selecting mapped CBD building
+footprints.
+
+In Database Mode, select or search a model identifier to inspect its plan,
+minimum bounding rectangle, inertia-equivalent rectangle, principal axes,
+regularity classification, and predicted transverse and longitudinal periods.
+
+![Plan Geometry Intelligence Lab database mode](web/assets/figure-1-database-mode.png)
+
+In Map Mode, navigate to a supported CBD, select a building footprint, supply
+or review its height, and obtain mapped attributes, plan geometry, and
+direction-aware period predictions in one view.
+
+![Plan Geometry Intelligence Lab map selection](web/assets/figure-4-map-selection.png)
+
+See the [website user guide](web/README.md) for step-by-step operation and the
+[azimuth-analysis guide](analysis/azimuth_prediction/README.md#interactive-website-guide)
+for calculation details and reproducible Python workflows.
+
 ## Visual overview
 
 ### Representative plan geometry
@@ -46,6 +70,9 @@ data/
 results/
   period_prediction/             Regression figures, tables, and predictions
   azimuth_prediction/            Geometry examples and their documentation
+web/
+  README.md                      Interactive website overview
+  assets/                        Database, drawing, and map screenshots
 schema/
   period_prediction_schema.sql   Period-database schema
   azimuth_prediction_schema.sql  Plan-geometry database schema
