@@ -135,9 +135,9 @@ direction-aware period predictions in one view.
 
 ![Plan Geometry Intelligence Lab map selection](web/assets/figure-4-map-selection.png)
 
-See the [website user guide](web/README.md) for step-by-step operation and the
-[azimuth-analysis guide](analysis/azimuth_prediction/README.md#interactive-website-guide)
-for calculation details and reproducible Python workflows.
+See the [website user guide](web/README.md) for step-by-step operation. The
+[azimuth-analysis guide](analysis/azimuth_prediction/README.md) documents the
+calculation details and reproducible Python workflows.
 
 ## Validation
 
